@@ -7,6 +7,27 @@ pub struct Todo_Item {
         pub done: bool
 }
 
+
+pub fn create_table() -> Result<(), &'static str> {
+        let conn = match Connection::open("test.db") {
+                Ok(some) => some,
+                Err(_) => return Err("Couldn't connect to the database.")
+        };
+
+        let sql = "CREATE TABLE IF NOT EXISTS todo (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                done BOOLEAN NOT NULL
+        )";
+
+        match conn.execute(sql, []) {
+                Ok(_) => (),
+                Err(_) => return Err("Couldn't create the table.")
+        };
+
+        Ok(())
+}
+
 pub fn execute_sql(sql: String) -> Result<(), &'static str>{
         let conn = match Connection::open("test.db") {
                 Ok(some) => some,

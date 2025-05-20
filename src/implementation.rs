@@ -1,14 +1,17 @@
+use crate::sql::create_table;
 use crate::sql::execute_sql;
 use crate::sql::query_data;
 use console::style;
 use console::Style;
 
 pub fn add(tasks: String) -> Result<(), &'static str> {
+        let _ = create_table();
         let mut tasks_vector: Vec<String>= tasks.split("\"").filter(|s| !s.is_empty()).map(|s| s.trim().to_string()).collect();
         tasks_vector.retain(|s| s!= "");
         
         for task in tasks_vector {
-                let sql = format!("INSERT INTO todo (name, done) VALUES ({}, false)", task);
+                let sql = format!("INSERT INTO todo (name, done) VALUES (\"{}\", false)", task);
+                println!("SQL: {}", sql);
                 match execute_sql(sql) {
                         Ok(_) => return Ok(()),
                         Err(_) => return Err("Error when adding todo.")
@@ -20,7 +23,7 @@ pub fn add(tasks: String) -> Result<(), &'static str> {
 
 
 pub fn edit(index: i32, newtask: &str) -> Result<(), &'static str> {
-        let sql = format!("UPDATE todo SET name={} WHERE index={}", newtask, index);
+        let sql = format!("UPDATE todo SET name='{}' WHERE id={}", newtask, index);
         match execute_sql(sql) {
                 Ok(_) => return Ok(()),
                 Err(_) => return Err("Error while adding todo.")
@@ -28,18 +31,19 @@ pub fn edit(index: i32, newtask: &str) -> Result<(), &'static str> {
 }
 
 pub fn list() -> Result<(), &'static str> {
+        let _ = create_table();
         let strike_through = Style::new().strikethrough();
         let sql = format!("SELECT id, name, done FROM todo");
         let todos = match query_data(&sql) {
                 Ok(some) => some,
                 Err(_) => return Err("Couldn't get todo items.")
         };
-
+        println!("List of all tasks:");
         for todo in todos {
                 let id = todo.id;
                 let name = todo.name;
                 let done = todo.done;
-                println!("List of tasks:");
+
                 if done {
                         println!("{}. {}", id, strike_through.apply_to(name));
                 } else {
@@ -52,6 +56,7 @@ pub fn list() -> Result<(), &'static str> {
 
 
 pub fn list_done() -> Result<(), &'static str> {
+        let _ = create_table();
         let sql = format!("SELECT id, name, done FROM todo WHERE done=true");
         let done_todos = match query_data(&sql) {
                 Ok(some) => some,
@@ -70,6 +75,7 @@ pub fn list_done() -> Result<(), &'static str> {
 
 
 pub fn list_undone() -> Result<(), &'static str> {
+        let _ = create_table();
         let sql = format!("SELECT id, name, done FROM todo WHERE done=false");
         let undone_todos = match query_data(&sql) {
                 Ok(some) => some,
@@ -79,7 +85,6 @@ pub fn list_undone() -> Result<(), &'static str> {
         for todo in undone_todos {
                 let id = todo.id;
                 let name = todo.name;
-                println!("List of undone tasks:");
                 println!("{}. {}", id, name);
         }
 
@@ -88,6 +93,7 @@ pub fn list_undone() -> Result<(), &'static str> {
 
 
 pub fn done(indexes: Vec<i32>) -> Result<(), &'static str> {
+        let _ = create_table();
         for index in indexes {
                 let sql = format!("UPDATE todo SET done=true WHERE id={}", index);
                 match execute_sql(sql) {
@@ -116,6 +122,7 @@ pub fn rm (indexes: Vec<i32>) -> Result<(), &'static str> {
 
 
 pub fn reset() -> Result<(), &'static str> {
+        let _ = create_table();
         let sql = format!("DELETE FROM todo");
         match execute_sql(sql) {
                 Ok(_) => (),

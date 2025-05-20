@@ -1,31 +1,22 @@
-use clap::Parser;
+use clap::{Parser, Subcommand};
 
+#[derive(Subcommand, Debug)]
 pub enum Commands {
-        Add(String), // add any number of todos
-        Edit(i32, String), // edit ith task
-        List, // lists all tasks
-        ListDone, // lists all done tasks
-        ListUnDone, // lists all undone tasks
-        Done(i32), // marks task as done
-        Rm(i32), // removes a task
-        Reset, // deletes all tasks
-        Sort, // sorts completed and uncompleted tasks
+        Add{items: String}, // add any number of todos
+        Edit{index: i32, items: String}, // edit a todo
+        List, // list all todos
+        ListDone, // list all done todos
+        ListUnDone, // list all undone todos
+        Done{indexes: Vec<i32>}, // mark a todo as done
+        Rm{index: Vec<i32>}, // remove a todo
+        Reset, // reset all todos
+        Sort, // sort all todos
 }
 
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
 pub struct Args {
-        
-        /// Command
-        #[arg()]
-        pub command: String,
-
-        /// Argument 1
-        #[arg(default_value_t = 1)] 
-        pub index: i32,
-
-        /// Argument 2
-        #[arg(default_value_t = String::from(""))]
-        pub tasks: String
+        #[command(subcommand)]
+        pub command: Commands,
 }
 

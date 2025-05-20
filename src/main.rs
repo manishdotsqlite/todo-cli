@@ -1,6 +1,7 @@
-
 use args::{Args, Commands};
 use clap::{Parser};
+use implementation::{add, done, edit, list, list_done, list_undone, reset, rm};
+use sql::create_table;
 
 
 mod args;
@@ -10,73 +11,36 @@ mod sql;
 fn main(){
     let args = Args::parse();
 
-    let command = (args.command).to_lowercase();
-    let index = args.index;
-    let tasks = args.tasks;
+    // Create the table if it doesn't exist
+    let _ = create_table();
 
-    let action = match command.as_str(){
-        "add" => Commands::Add(tasks),
-        "edit" => Commands::Edit(index, tasks),
-        "list" => Commands::List,
-        "listdone" => Commands::ListDone,
-        "listundone" => Commands::ListUnDone,
-        "done" => Commands::Done(index),
-        "rm" => Commands::Rm(index),
-        "reset" => Commands::Reset,
-        "sort" => Commands::Sort,
-        _ => {
-            println!("Invalid command. Use --help for more information.");
-            return;
-        }
-    };
-
-    match action {
-        Commands::Add(tasks) => {
-            if let Err(e) = implementation::add(tasks) {
-                println!("Error: {}", e);
-            }
-        },
-        Commands::Edit(index, task) => {
-            if let Err(e) = implementation::edit(index, &task) {
-                println!("Error: {}", e);
-            }
+    let _ = match args.command {
+        Commands::Add { items } => {
+            let _ = add(items);
+        }, 
+        Commands::Edit { index, items } => {
+            let _ = edit(index, &items);
         },
         Commands::List => {
-            if let Err(e) = implementation::list() {
-                println!("Error: {}", e);
-            }
+            let _ = list();
         },
         Commands::ListDone => {
-            if let Err(e) = implementation::list_done() {
-                println!("Error: {}", e);
-            }
+            let _ = list_done();
         },
         Commands::ListUnDone => {
-            if let Err(e) = implementation::list_undone() {
-                println!("Error: {}", e);
-            }
+            let _ = list_undone();
         },
-        Commands::Done(index) => {
-            if let Err(e) = implementation::done(vec![index]) {
-                println!("Error: {}", e);
-            }
+        Commands::Done { indexes } => {
+            let _ = done(indexes);
         },
-        Commands::Rm(index) => {
-            if let Err(e) = implementation::rm(vec![index]) {
-                println!("Error: {}", e);
-            }
+        Commands::Rm { index } => {
+            let _ = rm(index);
         },
         Commands::Reset => {
-            if let Err(e) = implementation::reset() {
-                println!("Error: {}", e);
-            }
+            let _ = reset();
         },
         Commands::Sort => {
-            if let Err(e) = implementation::sort() {
-                println!("Error: {}", e);
-            }
+            let _ = list();
         },
-    }
-
-
+    };
 }
